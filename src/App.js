@@ -2,7 +2,7 @@ import Navbar from './Navbar'
 import { Logo, Search, NumResults } from './Navbar'
 import Main from './Main'
 import { Box, MovieList, WatchedSummary, WatchedMoviesList } from './Main'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const tempMovieData = [
 	{
