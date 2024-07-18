@@ -8,7 +8,9 @@ import {
 	WatchedMoviesList,
 	Loader,
 	ErrorMessage,
+	MovieDetails,
 } from './Main'
+import { BASE_URL, KEY } from './config'
 import { useEffect, useState } from 'react'
 
 const tempMovieData = [
@@ -58,16 +60,21 @@ const tempWatchedData = [
 	},
 ]
 
-const KEY = '73f85f5f'
-
 export default function App() {
 	const [query, setQuery] = useState('interstellar')
 	const [movies, setMovies] = useState([])
 	const [watched, setWatched] = useState([])
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState('')
+	const [selectedId, setSelectedId] = useState(null)
 
-	// const tempQuery = 'interstellar'
+	function handleSelectMovie(id) {
+		setSelectedId((selectedId) => (selectedId === id ? null : id))
+	}
+
+	function handleCloseMovie() {
+		setSelectedId(null)
+	}
 
 	useEffect(
 		function () {
@@ -76,9 +83,7 @@ export default function App() {
 					setIsLoading(true)
 					setError('')
 
-					const res = await fetch(
-						`http://www.omdbapi.com/?i=tt3896198&apikey=${KEY}&s=${query}`
-					)
+					const res = await fetch(`${BASE_URL}/?apikey=${KEY}&s=${query}`)
 					if (!res.ok)
 						throw new Error('Something went wrong with fetching movies')
 
@@ -116,13 +121,24 @@ export default function App() {
 			<Main>
 				<Box>
 					{isLoading && <Loader />}
-					{!isLoading && !error && <MovieList movies={movies} />}
+					{!isLoading && !error && (
+						<MovieList movies={movies} onSelectMovie={handleSelectMovie} />
+					)}
 					{error && <ErrorMessage message={error} />}
 				</Box>
 
 				<Box>
-					<WatchedSummary watched={watched} />
-					<WatchedMoviesList watched={watched} />
+					{selectedId ? (
+						<MovieDetails
+							selectedId={selectedId}
+							onCloseMovie={handleCloseMovie}
+						/>
+					) : (
+						<>
+							<WatchedSummary watched={watched} />
+							<WatchedMoviesList watched={watched} />
+						</>
+					)}
 				</Box>
 			</Main>
 		</>

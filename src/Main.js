@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import StarRating from './StarRating'
+import { useEffect, useState } from 'react'
+import { BASE_URL, KEY } from './config'
 
 const average = (arr) =>
 	arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0)
@@ -20,19 +22,19 @@ export function Box({ children }) {
 	)
 }
 
-export function MovieList({ movies }) {
+export function MovieList({ movies, onSelectMovie }) {
 	return (
-		<ul className="list">
+		<ul className="list list-movies">
 			{movies?.map((movie) => (
-				<Movie movie={movie} key={movie.imdbID} />
+				<Movie movie={movie} onSelectMovie={onSelectMovie} key={movie.imdbID} />
 			))}
 		</ul>
 	)
 }
 
-function Movie({ movie }) {
+function Movie({ movie, onSelectMovie }) {
 	return (
-		<li>
+		<li onClick={() => onSelectMovie(movie.imdbID)}>
 			<img src={movie.Poster} alt={`${movie.Title} poster`} />
 			<h3>{movie.Title}</h3>
 			<div>
@@ -42,6 +44,85 @@ function Movie({ movie }) {
 				</p>
 			</div>
 		</li>
+	)
+}
+
+export function MovieDetails({ selectedId, onCloseMovie }) {
+	const [movie, setMovie] = useState({})
+	const [isLoading, setIsLoading] = useState(false)
+
+	const {
+		Title: title,
+		Poster: poster,
+		Runtime: runtime,
+		imdbRating,
+		Plot: plot,
+		Released: released,
+		Actors: actors,
+		Director: director,
+		Genre: genre,
+	} = movie
+
+	useEffect(
+		function () {
+			async function getMovieDetails() {
+				try {
+					setIsLoading(true)
+
+					const res = await fetch(`${BASE_URL}/?apikey=${KEY}&i=${selectedId}`)
+					if (!res.ok)
+						throw new Error('Something went wrong with fetching movies')
+
+					const data = await res.json()
+					if (data.Response === 'False') throw new Error('Movie not found')
+
+					setMovie(data)
+					setIsLoading(false)
+				} catch (err) {
+					console.error(err.message)
+				}
+			}
+			getMovieDetails()
+		},
+		[selectedId]
+	)
+
+	return (
+		<div className="details">
+			{isLoading ? (
+				<Loader />
+			) : (
+				<>
+					<header>
+						<button className="btn-back" onClick={onCloseMovie}>
+							&larr;
+						</button>
+						<img src={poster} alt={`Poster of ${movie} movie`} />
+						<div className="details-overview">
+							<h2>{title}</h2>
+							<p>
+								{released} &bull; {runtime}
+							</p>
+							<p>{genre}</p>
+							<p>
+								<span>⭐️</span>
+								{imdbRating} IMDb Rating
+							</p>
+						</div>
+					</header>
+					<section>
+						<div className="rating">
+							<StarRating maxRating={10} size={24} />
+						</div>
+						<p>
+							<em>{plot}</em>
+						</p>
+						<p>Starring {actors}</p>
+						<p>Directed by {director}</p>
+					</section>
+				</>
+			)}
+		</div>
 	)
 }
 
