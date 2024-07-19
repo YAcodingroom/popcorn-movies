@@ -96,6 +96,7 @@ export function MovieDetails({
 					onCloseMovie()
 				}
 			}
+
 			document.addEventListener('keydown', callback)
 
 			return function () {
