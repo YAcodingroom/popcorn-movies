@@ -47,12 +47,24 @@ function Movie({ movie, onSelectMovie }) {
 	)
 }
 
-export function MovieDetails({ selectedId, onCloseMovie }) {
+export function MovieDetails({
+	selectedId,
+	watched,
+	onCloseMovie,
+	onAddWatched,
+}) {
 	const [movie, setMovie] = useState({})
 	const [isLoading, setIsLoading] = useState(false)
+	const [userRating, setUserRating] = useState('')
+
+	const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId)
+	const watchedUserRating = watched.find(
+		(movie) => movie.imdbID === selectedId
+	)?.userRating
 
 	const {
 		Title: title,
+		Year: year,
 		Poster: poster,
 		Runtime: runtime,
 		imdbRating,
@@ -62,6 +74,36 @@ export function MovieDetails({ selectedId, onCloseMovie }) {
 		Director: director,
 		Genre: genre,
 	} = movie
+
+	function handleAdd() {
+		const newWatchedMovie = {
+			imdbID: selectedId,
+			year,
+			title,
+			poster,
+			runtime: Number(runtime.split(' ').at(0)),
+			imdbRating: Number(imdbRating),
+			userRating,
+		}
+		onAddWatched(newWatchedMovie)
+		onCloseMovie()
+	}
+
+	useEffect(
+		function () {
+			const callback = function (e) {
+				if (e.code === 'Escape') {
+					onCloseMovie()
+				}
+			}
+			document.addEventListener('keydown', callback)
+
+			return function () {
+				document.removeEventListener('keydown', callback)
+			}
+		},
+		[onCloseMovie]
+	)
 
 	useEffect(
 		function () {
@@ -85,6 +127,19 @@ export function MovieDetails({ selectedId, onCloseMovie }) {
 			getMovieDetails()
 		},
 		[selectedId]
+	)
+
+	useEffect(
+		function () {
+			if (!title) return
+
+			document.title = `Movie | ${title}`
+
+			return function () {
+				document.title = 'usePopcorn'
+			}
+		},
+		[title]
 	)
 
 	return (
@@ -112,7 +167,25 @@ export function MovieDetails({ selectedId, onCloseMovie }) {
 					</header>
 					<section>
 						<div className="rating">
-							<StarRating maxRating={10} size={24} />
+							{!isWatched ? (
+								<>
+									<StarRating
+										maxRating={10}
+										size={24}
+										onSetRating={setUserRating}
+									/>
+									{userRating > 0 && (
+										<button className="btn-add" onClick={handleAdd}>
+											+ Add to list
+										</button>
+									)}
+								</>
+							) : (
+								<p>
+									You rated with this movie : <span>⭐️ </span>
+									{watchedUserRating}
+								</p>
+							)}
 						</div>
 						<p>
 							<em>{plot}</em>
@@ -141,36 +214,40 @@ export function WatchedSummary({ watched }) {
 				</p>
 				<p>
 					<span>⭐️</span>
-					<span>{avgImdbRating}</span>
+					<span>{avgImdbRating.toFixed(2)}</span>
 				</p>
 				<p>
 					<span>🌟</span>
-					<span>{avgUserRating}</span>
+					<span>{avgUserRating.toFixed(2)}</span>
 				</p>
 				<p>
 					<span>⏳</span>
-					<span>{avgRuntime} min</span>
+					<span>{avgRuntime.toFixed(0)} min</span>
 				</p>
 			</div>
 		</div>
 	)
 }
 
-export function WatchedMoviesList({ watched }) {
+export function WatchedMoviesList({ watched, onDeleteWatched }) {
 	return (
 		<ul className="list">
 			{watched.map((movie) => (
-				<WatchedMovie movie={movie} key={movie.imdbID} />
+				<WatchedMovie
+					movie={movie}
+					onDeleteWatched={onDeleteWatched}
+					key={movie.imdbID}
+				/>
 			))}
 		</ul>
 	)
 }
 
-function WatchedMovie({ movie }) {
+function WatchedMovie({ movie, onDeleteWatched }) {
 	return (
 		<li>
-			<img src={movie.Poster} alt={`${movie.Title} poster`} />
-			<h3>{movie.Title}</h3>
+			<img src={movie.poster} alt={`${movie.title} poster`} />
+			<h3>{movie.title}</h3>
 			<div>
 				<p>
 					<span>⭐️</span>
@@ -184,6 +261,13 @@ function WatchedMovie({ movie }) {
 					<span>⏳</span>
 					<span>{movie.runtime} min</span>
 				</p>
+
+				<button
+					className="btn-delete"
+					onClick={() => onDeleteWatched(movie.imdbID)}
+				>
+					X
+				</button>
 			</div>
 		</li>
 	)
