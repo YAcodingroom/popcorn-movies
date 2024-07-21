@@ -1,6 +1,7 @@
 import StarRating from './StarRating'
 import { useEffect, useRef, useState } from 'react'
 import { BASE_URL, KEY } from './config'
+import { useKey } from './useKey'
 
 const average = (arr) =>
 	arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0)
@@ -92,28 +93,13 @@ export function MovieDetails({
 		onCloseMovie()
 	}
 
+	useKey('Escape', onCloseMovie)
+
 	useEffect(
 		function () {
 			if (userRating) countRef.current++
 		},
 		[userRating]
-	)
-
-	useEffect(
-		function () {
-			const callback = function (e) {
-				if (e.code === 'Escape') {
-					onCloseMovie()
-				}
-			}
-
-			document.addEventListener('keydown', callback)
-
-			return function () {
-				document.removeEventListener('keydown', callback)
-			}
-		},
-		[onCloseMovie]
 	)
 
 	useEffect(
