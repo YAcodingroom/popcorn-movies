@@ -24,7 +24,7 @@ npm start
 
 ## Links
 
-- Live Site URL: [live site URL here]()
+- Live Site URL: [live site URL here](https://popcorn-seemovie.netlify.app/)
 
 ## Author
 
