@@ -3,7 +3,8 @@
 A web application based on React, integrated with the OMDb API, allowing users to search for movies and view detailed information. Users can enter a movie name to search through the application, which calls the OMDB API and returns detailed information about the movie, such as title, director, actors, plot summary, and poster. Additionally, users can rate movies they have watched and add them to a personal list for future viewing and management.
 
 - Screenshot:
-  ![split bill](./screenshot/split-bill.png)
+  ![movie detail](./screenshot/search.png)
+  ![movies list](./screenshot/list.png)
 
 ## Built with
 
